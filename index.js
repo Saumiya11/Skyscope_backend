@@ -12,9 +12,9 @@ app.use(cors()); // Enable CORS
 
 // Use global fetch if Node.js version >=18, else import node-fetch dynamically
 let fetchFunc;
-try {
-  fetchFunc = fetch; // global fetch (Node 18+)
-} catch {
+if (typeof fetch === 'function') {
+  fetchFunc = fetch; // Node 18+
+} else {
   fetchFunc = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 }
 
@@ -52,7 +52,7 @@ app.get('/weather/forecast', async (req, res) => {
     const data = await response.json();
     console.log('OpenWeather forecast response:', data);
 
-    if (data.cod !== "200") {
+    if (data.cod != 200) {
       return res.status(400).json({ error: data.message });
     }
     res.json(data);
@@ -62,9 +62,7 @@ app.get('/weather/forecast', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});app.get('/weather/currentByCoords', async (req, res) => {
+app.get('/weather/currentByCoords', async (req, res) => {
   const { lat, lon } = req.query;
   if (!lat || !lon) return res.status(400).json({ error: 'Latitude and longitude are required' });
 
@@ -92,7 +90,7 @@ app.get('/weather/forecastByCoords', async (req, res) => {
     const response = await fetchFunc(url);
     const data = await response.json();
 
-    if (data.cod !== "200") {
+    if (data.cod != 200) {
       return res.status(400).json({ error: data.message });
     }
     res.json(data);
@@ -101,3 +99,9 @@ app.get('/weather/forecastByCoords', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch forecast by coords' });
   }
 });
+
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
+
+
